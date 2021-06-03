@@ -17,7 +17,7 @@
                     v-show="filterable && query === ''"
                     @click="handleFocus">{{ displayRender }}</div>
                 <Icon type="ios-close-circle" :class="[prefixCls + '-arrow']" v-show="showCloseIcon" @click.native.stop="clearSelect"></Icon>
-                <Icon type="ios-arrow-down" :class="[prefixCls + '-arrow']"></Icon>
+                <Icon :type="arrowType" :custom="customArrowType" :size="arrowSize" :class="[prefixCls + '-arrow']"></Icon>
             </slot>
         </div>
         <transition name="transition-drop">
@@ -44,10 +44,11 @@
                                     [selectPrefixCls + '-item-disabled']: item.disabled
                                 }]"
                                 v-for="(item, index) in querySelections"
+                                :key="index"
                                 @click="handleSelectItem(index)" v-html="item.display"></li>
                         </ul>
                     </div>
-                    <ul v-show="filterable && query !== '' && !querySelections.length" :class="[prefixCls + '-not-found-tip']"><li>{{ localeNotFoundText }}</li></ul>
+                    <ul v-show="(filterable && query !== '' && !querySelections.length) || !data.length" :class="[prefixCls + '-not-found-tip']"><li>{{ localeNotFoundText }}</li></ul>
                 </div>
             </Drop>
         </transition>
@@ -207,7 +208,7 @@
                     for (let i = 0; i < arr.length; i++) {
                         let item = arr[i];
                         item.__label = label ? label + ' / ' + item.label : item.label;
-                        item.__value = value ? value + ',' + item.value : item.value;
+                        item.__value = value ? [...value, item.value] : [item.value];
 
                         if (item.children && item.children.length) {
                             getSelections(item.children, item.__label, item.__value);
@@ -232,6 +233,41 @@
                     return item;
                 });
                 return selections;
+            },
+            // 3.4.0, global setting customArrow 有值时，arrow 赋值空
+            arrowType () {
+                let type = 'ios-arrow-down';
+
+                if (this.$IVIEW) {
+                    if (this.$IVIEW.cascader.customArrow) {
+                        type = '';
+                    } else if (this.$IVIEW.cascader.arrow) {
+                        type = this.$IVIEW.cascader.arrow;
+                    }
+                }
+                return type;
+            },
+            // 3.4.0, global setting
+            customArrowType () {
+                let type = '';
+
+                if (this.$IVIEW) {
+                    if (this.$IVIEW.cascader.customArrow) {
+                        type = this.$IVIEW.cascader.customArrow;
+                    }
+                }
+                return type;
+            },
+            // 3.4.0, global setting
+            arrowSize () {
+                let size = '';
+
+                if (this.$IVIEW) {
+                    if (this.$IVIEW.cascader.arrowSize) {
+                        size = this.$IVIEW.cascader.arrowSize;
+                    }
+                }
+                return size;
             }
         },
         methods: {
@@ -241,7 +277,7 @@
                 this.currentValue = this.selected = this.tmpSelected = [];
                 this.handleClose();
                 this.emitValue(this.currentValue, oldVal);
-//                this.$broadcast('on-clear');
+            //                this.$broadcast('on-clear');
                 this.broadcast('Caspanel', 'on-clear');
             },
             handleClose () {
@@ -293,7 +329,7 @@
                 this.query = '';
                 this.$refs.input.currentValue = '';
                 const oldVal = JSON.stringify(this.currentValue);
-                this.currentValue = item.value.split(',');
+                this.currentValue = item.value;
                 // use setTimeout for #4786, can not use nextTick, because @on-find-selected use nextTick
                 setTimeout(() => {
                     this.emitValue(this.currentValue, oldVal);
@@ -316,7 +352,7 @@
                     if ('__label' in new_item) {
                         delete new_item.__label;
                     }
-                    if ('children' in new_item && new_item.children.length) {
+                    if (Array.isArray(new_item.children) && new_item.children.length) {
                         new_item.children = new_item.children.map(i => deleteData(i));
                     }
                     return new_item;

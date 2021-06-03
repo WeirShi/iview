@@ -84,9 +84,12 @@
             };
         },
         watch: {
-            error (val) {
-                this.validateMessage = val;
-                this.validateState = val === '' ? '' : 'error';
+            error: {
+                handler (val) {
+                    this.validateMessage = val;
+                    this.validateState = val ? 'error' : '';
+                },
+                immediate: true
             },
             validateStatus (val) {
                 this.validateState = val;
@@ -114,19 +117,16 @@
             //    }
             //    return parent;
             // },
-            fieldValue: {
-                cache: false,
-                get() {
-                    const model = this.form.model;
-                    if (!model || !this.prop) { return; }
+            fieldValue () {
+                const model = this.form.model;
+                if (!model || !this.prop) { return; }
 
-                    let path = this.prop;
-                    if (path.indexOf(':') !== -1) {
-                        path = path.replace(/:/, '.');
-                    }
-
-                    return getPropByPath(model, path).v;
+                let path = this.prop;
+                if (path.indexOf(':') !== -1) {
+                    path = path.replace(/:/, '.');
                 }
+
+                return getPropByPath(model, path).v;
             },
             labelStyles () {
                 let style = {};
@@ -178,33 +178,36 @@
                 return rules.filter(rule => !rule.trigger || rule.trigger.indexOf(trigger) !== -1);
             },
             validate(trigger, callback = function () {}) {
-                let rules = this.getFilteredRule(trigger);
-                if (!rules || rules.length === 0) {
-                    if (!this.required) {
-                        callback();
-                        return true;
-                    }else {
-                        rules = [{required: true}];
+                this.$nextTick(() => {
+                    let rules = this.getFilteredRule(trigger);
+                    if (!rules || rules.length === 0) {
+                        if (!this.required) {
+                            this.validateState = '';
+                            callback();
+                            return true;
+                        }else {
+                            rules = [{required: true}];
+                        }
                     }
-                }
 
-                this.validateState = 'validating';
+                    this.validateState = 'validating';
 
-                let descriptor = {};
-                descriptor[this.prop] = rules;
+                    let descriptor = {};
+                    descriptor[this.prop] = rules;
 
-                const validator = new AsyncValidator(descriptor);
-                let model = {};
+                    const validator = new AsyncValidator(descriptor);
+                    let model = {};
 
-                model[this.prop] = this.fieldValue;
+                    model[this.prop] = this.fieldValue;
 
-                validator.validate(model, { firstFields: true }, errors => {
-                    this.validateState = !errors ? 'success' : 'error';
-                    this.validateMessage = errors ? errors[0].message : '';
+                    validator.validate(model, { firstFields: true }, errors => {
+                        this.validateState = !errors ? 'success' : 'error';
+                        this.validateMessage = errors ? errors[0].message : '';
 
-                    callback(this.validateMessage);
+                        callback(this.validateMessage);
+                    });
+                    this.validateDisabled = false;
                 });
-                this.validateDisabled = false;
             },
             resetField () {
                 this.validateState = '';

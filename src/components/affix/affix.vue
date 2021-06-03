@@ -48,6 +48,10 @@
             },
             offsetBottom: {
                 type: Number
+            },
+            useCapture: {
+                type: Boolean,
+                default: false
             }
         },
         data () {
@@ -78,14 +82,17 @@
         mounted () {
 //            window.addEventListener('scroll', this.handleScroll, false);
 //            window.addEventListener('resize', this.handleScroll, false);
-            on(window, 'scroll', this.handleScroll);
-            on(window, 'resize', this.handleScroll);
+            on(window, 'scroll', this.handleScroll, this.useCapture);
+            on(window, 'resize', this.handleScroll, this.useCapture);
+            this.$nextTick(() => {
+                this.handleScroll();
+            });
         },
         beforeDestroy () {
 //            window.removeEventListener('scroll', this.handleScroll, false);
 //            window.removeEventListener('resize', this.handleScroll, false);
-            off(window, 'scroll', this.handleScroll);
-            off(window, 'resize', this.handleScroll);
+            off(window, 'scroll', this.handleScroll, this.useCapture);
+            off(window, 'resize', this.handleScroll, this.useCapture);
         },
         methods: {
             handleScroll () {

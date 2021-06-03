@@ -175,6 +175,10 @@ const router = new VueRouter({
             component: (resolve) => require(['./routers/date.vue'], resolve)
         },
         {
+            path: '/calendar',
+            component: (resolve) => require(['./routers/calendar.vue'], resolve)
+        },
+        {
             path: '/form',
             component: (resolve) => require(['./routers/form.vue'], resolve)
         },
@@ -229,6 +233,14 @@ const router = new VueRouter({
         {
             path: '/drawer',
             component: (resolve) => require(['./routers/drawer.vue'], resolve)
+        },
+        {
+            path: '/icon',
+            component: (resolve) => require(['./routers/icon.vue'], resolve)
+        },
+        {
+            path: '/list',
+            component: (resolve) => require(['./routers/list.vue'], resolve)
         }
     ]
 });

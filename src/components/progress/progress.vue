@@ -2,10 +2,10 @@
     <div :class="wrapClasses">
         <div :class="outerClasses">
             <div :class="innerClasses">
-                <div :class="bgClasses" :style="bgStyle"></div><div :class="successBgClasses" :style="successBgStyle"></div>
+                <div :class="bgClasses" :style="bgStyle"><div class="ivu-progress-inner-text" v-if="textInside">{{ percent }}%</div></div><div :class="successBgClasses" :style="successBgStyle"></div>
             </div>
         </div>
-        <span v-if="!hideInfo" :class="textClasses">
+        <span v-if="!hideInfo && !textInside" :class="textClasses">
             <slot>
                 <span v-if="isStatus" :class="textInnerClasses">
                     <Icon :type="statusIcon"></Icon>
@@ -52,6 +52,13 @@
             vertical: {
                 type: Boolean,
                 default: false
+            },
+            strokeColor: {
+                type: [String, Array]
+            },
+            textInside: {
+                type: Boolean,
+                default: false
             }
         },
         data () {
@@ -77,13 +84,23 @@
                 return type;
             },
             bgStyle () {
-                return this.vertical ? {
+                const style =  this.vertical ? {
                     height: `${this.percent}%`,
-                    width: `${this.strokeWidth}px`
+                    width: `${this.strokeWidth}px`,
                 } : {
                     width: `${this.percent}%`,
                     height: `${this.strokeWidth}px`
                 };
+
+                if (this.strokeColor) {
+                    if (typeof this.strokeColor === 'string') {
+                        style['background-color'] = this.strokeColor;
+                    } else {
+                        style['background-image'] = `linear-gradient(to right, ${this.strokeColor[0]} 0%, ${this.strokeColor[1]} 100%)`;
+                    }
+                }
+
+                return style;
             },
             successBgStyle () {
                 return this.vertical ? {
@@ -99,7 +116,7 @@
                     `${prefixCls}`,
                     `${prefixCls}-${this.currentStatus}`,
                     {
-                        [`${prefixCls}-show-info`]: !this.hideInfo,
+                        [`${prefixCls}-show-info`]: !this.hideInfo && !this.textInside,
                         [`${prefixCls}-vertical`]: this.vertical
 
                     }

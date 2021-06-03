@@ -5,7 +5,7 @@
         </transition>
         <div :class="wrapClasses" :style="wrapStyles" @click="handleWrapClick">
             <transition :name="transitionNames[0]" @after-leave="animationFinish">
-                <div :class="classes" :style="mainStyles" v-show="visible">
+                <div :class="classes" :style="mainStyles" v-show="visible" @mousedown="handleMousedown">
                     <div :class="contentClasses" ref="content" :style="contentStyles" @click="handleClickModal">
                         <a :class="[prefixCls + '-close']" v-if="closable" @click="close">
                             <slot name="close">
@@ -60,7 +60,9 @@
             },
             maskClosable: {
                 type: Boolean,
-                default: true
+                default () {
+                    return !this.$IVIEW || this.$IVIEW.modal.maskClosable === '' ? true : this.$IVIEW.modal.maskClosable;
+                }
             },
             title: {
                 type: String
@@ -80,7 +82,10 @@
                 default: false
             },
             styles: {
-                type: Object
+                type: Object,
+                default() {
+                    return {};
+                }
             },
             className: {
                 type: String
@@ -138,6 +143,7 @@
                     dragging: false
                 },
                 modalIndex: this.handleGetModalIndex(),  // for Esc close the top modal
+                isMouseTriggerIn: false, // #5800
             };
         },
         computed: {
@@ -199,8 +205,10 @@
                 let style = {};
 
                 if (this.draggable) {
-                    if (this.dragData.x !== null) style.left = `${this.dragData.x}px`;
-                    if (this.dragData.y !== null) style.top = `${this.dragData.y}px`;
+                    let customTop = this.styles.top ? parseFloat(this.styles.top) : 0;
+                    let customLeft = this.styles.left ? parseFloat(this.styles.left) : 0;
+                    if (this.dragData.x !== null) style.left = `${this.dragData.x - customLeft}px`;
+                    if (this.dragData.y !== null) style.top = `${this.dragData.y - customTop}px`;
                     const width = parseInt(this.width);
                     const styleWidth = {
                         width: width <= 100 ? `${width}%` : `${width}px`
@@ -241,9 +249,16 @@
                 }
             },
             handleWrapClick (event) {
+                if (this.isMouseTriggerIn) {
+                    this.isMouseTriggerIn = false;
+                    return;
+                }
                 // use indexOf,do not use === ,because ivu-modal-wrap can have other custom className
                 const className = event.target.getAttribute('class');
                 if (className && className.indexOf(`${prefixCls}-wrap`) > -1) this.handleMask();
+            },
+            handleMousedown () {
+                this.isMouseTriggerIn = true;
             },
             cancel () {
                 this.close();

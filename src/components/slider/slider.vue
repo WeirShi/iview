@@ -7,25 +7,45 @@
             :max="max"
             :step="step"
             :value="exportValue[0]"
-            :disabled="disabled"
+            :disabled="itemDisabled"
+            :active-change="activeChange"
             @on-change="handleInputChange"></Input-number>
         <div
             :class="[prefixCls + '-wrap']"
             ref="slider" @click.self="sliderClick"
         >
             <input type="hidden" :name="name" :value="exportValue">
-            <template v-if="showStops">
-                <div
-                    :class="[prefixCls + '-stop']"
-                    v-for="item in stops"
-                    :style="{ 'left': item + '%' }"
-                    @click.self="sliderClick"
-                ></div>
-            </template>
             <div
                 :class="[prefixCls + '-bar']"
                 :style="barStyle"
                 @click.self="sliderClick"></div>
+            <template v-if="showStops">
+                <div
+                    :class="[prefixCls + '-stop']"
+                    v-for="(item,index) in stops" 
+                    :key="index"
+                    :style="{ 'left': item + '%' }"
+                    @click.self="sliderClick"
+                ></div>
+            </template>
+            <template v-if="markList.length > 0">
+                <div
+                    v-for="(item, key) in markList"
+                    :key="key"
+                    :class="[prefixCls + '-stop']"
+                    :style="{ 'left': item.position + '%' }"
+                    @click.self="sliderClick"
+                ></div>
+                <div class="ivu-slider-marks">
+                    <SliderMarker
+                        v-for="(item, key) in markList"
+                        :key="key"
+                        :mark="item.mark"
+                        :style="{ 'left': item.position + '%' }"
+                        @click.native="sliderClick"
+                    />
+                </div>
+            </template>
             <div
                 :class="[prefixCls + '-button-wrap']"
                 :style="{left: minPosition + '%'}"
@@ -82,16 +102,19 @@
 <script>
     import InputNumber from '../../components/input-number/input-number.vue';
     import Tooltip from '../../components/tooltip/tooltip.vue';
+    import SliderMarker from './marker';
     import { getStyle, oneOf } from '../../utils/assist';
     import { on, off } from '../../utils/dom';
     import Emitter from '../../mixins/emitter';
+    import mixinsForm from '../../mixins/form';
+    import elementResizeDetectorMaker from 'element-resize-detector';
 
     const prefixCls = 'ivu-slider';
 
     export default {
         name: 'Slider',
-        mixins: [ Emitter ],
-        components: { InputNumber, Tooltip },
+        mixins: [ Emitter, mixinsForm ],
+        components: { InputNumber, Tooltip, SliderMarker },
         props: {
             min: {
                 type: Number,
@@ -147,6 +170,15 @@
             },
             name: {
                 type: String
+            },
+            // 3.4.0
+            activeChange: {
+                type: Boolean,
+                default: true
+            },
+            // 3.5.4
+            marks: {
+                type: Object
             }
         },
         data () {
@@ -164,12 +196,13 @@
                     min: 0,
                     max: 1,
                 },
+                sliderWidth: 0
             };
         },
         watch: {
             value (val) {
                 val = this.checkLimits(Array.isArray(val) ? val : [val]);
-                if (val[0] !== this.currentValue[0] || val[1] !== this.currentValue[1]) {
+                if (!this.dragging && (val[0] !== this.currentValue[0] || val[1] !== this.currentValue[1])) {
                     this.currentValue = val;
                 }
             },
@@ -192,7 +225,7 @@
                     {
                         [`${prefixCls}-input`]: this.showInput && !this.range,
                         [`${prefixCls}-range`]: this.range,
-                        [`${prefixCls}-disabled`]: this.disabled
+                        [`${prefixCls}-disabled`]: this.itemDisabled
                     }
                 ];
             },
@@ -246,14 +279,30 @@
                 }
                 return result;
             },
-            sliderWidth () {
-                return parseInt(getStyle(this.$refs.slider, 'width'), 10);
+            markList() {
+                if (!this.marks) return [];
+
+                const marksKeys = Object.keys(this.marks);
+                return marksKeys.map(parseFloat)
+                    .sort((a, b) => a - b)
+                    .filter(point => point <= this.max && point >= this.min)
+                    .map(point => ({
+                        point,
+                        position: (point - this.min) * 100 / (this.max - this.min),
+                        mark: this.marks[point]
+                    }));
             },
             tipDisabled () {
                 return this.tipFormat(this.currentValue[0]) === null || this.showTip === 'never';
             },
-            valueRange(){
+            valueRange () {
                 return this.max - this.min;
+            },
+            firstPosition () {
+                return this.currentValue[0];
+            },
+            secondPosition () {
+                return this.currentValue[1];
             }
         },
         methods: {
@@ -269,7 +318,7 @@
                 return [min, max];
             },
             getCurrentValue (event, type) {
-                if (this.disabled) {
+                if (this.itemDisabled) {
                     return;
                 }
 
@@ -293,7 +342,7 @@
                 }
             },
             onPointerDown (event, type) {
-                if (this.disabled) return;
+                if (this.itemDisabled) return;
                 event.preventDefault();
                 this.pointerDown = type;
 
@@ -338,13 +387,20 @@
                 const modulus = this.handleDecimal(newPos,this.step);
                 const value = this.currentValue;
                 value[index] = newPos - modulus;
+
+                // 判断左右是否相等，否则会出现左边大于右边的情况
+                if (this.range) {
+                    if (type === 'min' && value[0] > value[1]) value[1] = value[0];
+                    if (type === 'max' && value[0] > value[1]) value[0] = value[1];
+                }
+
                 this.currentValue = [...value];
 
                 if (!this.dragging) {
-                    if (this.currentValue[index] !== this.oldValue[index]) {
-                        this.emitChange();
-                        this.oldValue[index] = this.currentValue[index];
-                    }
+                    // if (this.currentValue[index] !== this.oldValue[index]) {
+                    this.emitChange();
+                        // this.oldValue[index] = this.currentValue[index];
+                    // }
                 }
             },
             handleDecimal(pos,step){
@@ -368,13 +424,14 @@
             },
 
             sliderClick (event) {
-                if (this.disabled) return;
+                if (this.itemDisabled) return;
                 const currentX = this.getPointerX(event);
                 const sliderOffsetLeft = this.$refs.slider.getBoundingClientRect().left;
                 let newPos = ((currentX - sliderOffsetLeft) / this.sliderWidth * this.valueRange) + this.min;
+                let regularNewPos = newPos / this.valueRange * 100 ;
 
-                if (!this.range || newPos <= this.minPosition) this.changeButtonPosition(newPos, 'min');
-                else if (newPos >= this.maxPosition) this.changeButtonPosition(newPos, 'max');
+                if (!this.range || regularNewPos <= this.minPosition) this.changeButtonPosition(newPos, 'min');
+                else if (regularNewPos >= this.maxPosition) this.changeButtonPosition(newPos, 'max');
                 else this.changeButtonPosition(newPos, ((newPos - this.firstPosition) <= (this.secondPosition - newPos)) ? 'min' : 'max');
             },
 
@@ -389,7 +446,10 @@
 
             handleBlur (type) {
                 this.$refs[`${type}Tooltip`].handleClosePopper();
-            }
+            },
+            handleSetSliderWidth () {
+                this.sliderWidth = parseInt(getStyle(this.$refs.slider, 'width'), 10);
+            },
         },
         mounted () {
             // #2852
@@ -407,6 +467,12 @@
                     });
                 }
             });
+
+            this.observer = elementResizeDetectorMaker();
+            this.observer.listenTo(this.$refs.slider, this.handleSetSliderWidth);
+        },
+        beforeDestroy() {
+            this.observer.removeListener(this.$refs.slider, this.handleSetSliderWidth);
         }
     };
 </script>

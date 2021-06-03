@@ -23,6 +23,9 @@
         name: 'Tree',
         mixins: [ Emitter, Locale ],
         components: { TreeNode },
+        provide () {
+            return { TreeInstance: this };
+        },
         props: {
             data: {
                 type: Array,
@@ -38,9 +41,14 @@
                 type: Boolean,
                 default: false
             },
-            checkStrictly:{
-                type:Boolean,
-                default:false
+            checkStrictly: {
+                type: Boolean,
+                default: false
+            },
+            // 当开启 showCheckbox 时，如果开启 checkDirectly，select 将强制转为 check 事件
+            checkDirectly: {
+                type: Boolean,
+                default: false
             },
             emptyText: {
                 type: String
@@ -54,7 +62,8 @@
             },
             render: {
                 type: Function
-            }
+            },
+
         },
         data () {
             return {
@@ -112,9 +121,9 @@
                 const node = this.flatState[nodeKey].node;
                 const parent = this.flatState[parentKey].node;
                 if (node.checked == parent.checked && node.indeterminate == parent.indeterminate) return; // no need to update upwards
-
                 if (node.checked == true) {
-                    this.$set(parent, 'checked', parent[this.childrenKey].every(node => node.checked));
+                    // #6121
+                    this.$set(parent, 'checked', parent[this.childrenKey].every(node => node.checked || node.disabled !== undefined ));
                     this.$set(parent, 'indeterminate', !parent.checked);
                 } else {
                     this.$set(parent, 'checked', false);
@@ -151,10 +160,16 @@
             },
             updateTreeDown(node, changes = {}) {
                 if (this.checkStrictly) return;
-
                 for (let key in changes) {
-                    this.$set(node, key, changes[key]);
+                    // after #6121
+                    if( key === 'checked' && node.disabled ){
+                        this.$set(node, key, node.checked);
+                    }else{
+                        this.$set(node, key, changes[key]);
+                    }
+                    // before -- this.$set(node, key, changes[key]);
                 }
+
                 if (node[this.childrenKey]) {
                     node[this.childrenKey].forEach(child => {
                         this.updateTreeDown(child, changes);

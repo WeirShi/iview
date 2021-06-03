@@ -1,5 +1,5 @@
 <p align="center">
-    <a href="https://www.iviewui.com">
+    <a href="http://iview.talkingdata.com/">
         <img width="200" src="https://file.iviewui.com/logo-new.svg">
     </a>
 </p>
@@ -20,60 +20,9 @@ iView
 [![Sponers on Open Collective](https://opencollective.com/iview/tiers/sponsor/badge.svg?label=sponsor&color=brightgreen)](#sponers)
 
 
-<h2 align="center">Special Sponsors</h2>
-<table>
-      <tbody>
-        <tr>
-          <td align="center" valign="middle">
-            <a href="https://segmentfault.com/ls/1650000016424063" target="_blank">
-              <img width="300" src="https://file.iviewui.com/asd/asd-iview-live2.png">
-            </a>
-          </td>
-          <td align="center" valign="middle">
-            <a href="https://juejin.im/welcome/frontend?utm_source=iview&utm_medium=banner&utm_content=huoyue&utm_campaign=q4_website" target="_blank">
-              <img width="300" src="https://file.iviewui.com/asd/asd-juejin3.png">
-            </a>
-          </td>
-          <td align="center" valign="middle">
-            <a href="https://studio.qcloud.coding.net/campaign/favorite-plugins/index?utm_source=iview" target="_blank">
-              <img width="300" src="https://file.iviewui.com/asd/asd-coding.png">
-            </a>
-          </td>
-        </tr>
-        <tr>
-          <td align="center" valign="middle">
-            <a href="https://cn.udacity.com/fend/?utm_source=iviewui&utm_medium=banner&utm_campaign=fend" target="_blank">
-              <img width="300" src="https://file.iviewui.com/asd/asd-u-new-2.png">
-            </a>
-          </td>
-<!--           <td align="center" valign="middle">
-            <a href="https://www.vaptcha.com/?from=iview" target="_blank">
-              <img width="300" src="https://file.iviewui.com/asd/asd-vaptcha2.jpg">
-            </a>
-          </td> -->
-          <td align="center" valign="middle">
-            <a href="https://www.accesshub.cn/" target="_blank">
-              <img width="300" src="https://file.iviewui.com/asd/asd-accesshub.jpg">
-            </a>
-          </td>
-          <td align="center" valign="middle">
-            <a href="https://juejin.im/book/5bc844166fb9a05cd676ebca" target="_blank">
-              <img width="300" src="https://file.iviewui.com/asd/asd-v-book2.png">
-            </a>
-          </td>
-        </tr>
-      </tbody>
-</table>
-
-> If you'd like be a sponsor, to show your ads in GitHub and iView doc, please email admin@aresn.com to get more infomation.
-> 
-> (如果您想成为赞助商，在 GitHub 和 iView 文档展示您的广告，请邮件咨询 admin@aresn.com)
->
-> (如果您有任何关于 iView 或 Vue.js 相关的问题，欢迎到 iView 社区提问 https://dev.iviewui.com/issues )
-
 ## Docs
 
-**[3.x](https://www.iviewui.com)** | [2.x](http://v2.iviewui.com) | [1.x](http://v1.iviewui.com)
+**[3.x](http://iview.talkingdata.com/)** | [2.x](http://v2.iviewui.com) | [1.x](http://v1.iviewui.com)
 
 ## Features
 
@@ -160,7 +109,7 @@ If you want to contribute or have questions or bugs to report:
 
 **Questions:** Find other users at the [Gitter chat](https://gitter.im/iview/iview) or post on [StackOverflow using `[iview-ui]` tag](https://stackoverflow.com/questions/tagged/iview-ui)  
 **Bugs:** [File a issue here](https://github.com/iview/iview/issues) - please provide a example so we can help you better  
-**Contribute:** Contact us in [Gitter chat](https://gitter.im/iview/iview), WeChat or via mail to `admin@aresn.com`. PRs welcome!
+**Contribute:** Contact us in [Gitter chat](https://gitter.im/iview/iview), WeChat or via mail to `iview@tendcloud.com`. PRs welcome!
 
 ## Major Contributors
 |Name|Avatar|Name|Avatar|Name|Avatar|
@@ -176,19 +125,13 @@ If you want to contribute or have questions or bugs to report:
 - [iView Developer](https://dev.iviewui.com)
 - [iView Run](https://run.iviewui.com)
 - [iView-Admin](https://github.com/iview/iview-admin)
-- [iView-Doc](https://github.com/iview/iview-doc)
 - [iView-Loader](https://github.com/iview/iview-loader)
+- [iView-Plugin](https://github.com/iview/vue-cli-plugin-iview)
 - [iView-Area](https://github.com/iview/iview-area)
 - [iView-Editor](https://github.com/iview/iview-editor)
-- [iView-Cli](https://github.com/iview/iview-cli)
 
-## Sponers
-![](https://opencollective.com/iview/tiers/sponsor.svg?avatarHeight=36)
-
-## Backers
-![](https://opencollective.com/iview/tiers/backer.svg?avatarHeight=36)
 
 ## License
 [MIT](http://opensource.org/licenses/MIT)
 
-Copyright (c) 2016-present, iView
+Copyright (c) 2016-present, TalkingData

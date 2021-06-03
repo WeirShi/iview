@@ -212,11 +212,18 @@ export function findComponentDownward (context, componentName) {
 }
 
 // Find components downward
-export function findComponentsDownward (context, componentName) {
+export function findComponentsDownward (context, componentName, ignoreComponentNames = []) {
+    if (!Array.isArray(ignoreComponentNames)) {
+        ignoreComponentNames = [ignoreComponentNames];
+    }
     return context.$children.reduce((components, child) => {
         if (child.$options.name === componentName) components.push(child);
-        const foundChilds = findComponentsDownward(child, componentName);
-        return components.concat(foundChilds);
+        if (ignoreComponentNames.indexOf(child.$options.name) < 0) {
+            const foundChilds = findComponentsDownward(child, componentName);
+            return components.concat(foundChilds);
+        } else {
+            return components;
+        }
     }, []);
 }
 
@@ -306,10 +313,11 @@ export function removeClass(el, cls) {
 
 export const dimensionMap = {
     xs: '480px',
-    sm: '768px',
-    md: '992px',
-    lg: '1200px',
-    xl: '1600px',
+    sm: '576px',
+    md: '768px',
+    lg: '992px',
+    xl: '1200px',
+    xxl: '1600px',
 };
 
 export function setMatchMedia () {
